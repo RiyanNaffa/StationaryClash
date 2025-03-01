@@ -1,1 +1,7 @@
-*.ldf*.pdf.vs/
+*.ldf
+*.mdf
+*.pdf
+.vs/
+bin/
+obj/
+*.user
