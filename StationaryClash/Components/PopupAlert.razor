@@ -1,0 +1,29 @@
+﻿@code {
+    [Parameter] public bool CanGacha { get; set; } = true;
+    [Parameter] public EventCallback<bool> IsErrorChanged { get; set; } // EventCallback untuk mengubah status visibilitas]
+}
+
+@if (!CanGacha)
+{
+    <div class="popup-overlay">
+        <div class="popup-card">
+            <div class="popup-header">
+                <h3>Alert!</h3>
+                <button @onclick="ClosePopup">🗙</button>
+            </div>
+            <div class="popup-body">
+                <div class="popup-content">
+                    <p class="popup-char">Token Anda tidak mencukupi.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private void ClosePopup()
+    {
+        CanGacha = true;
+        IsErrorChanged.InvokeAsync(CanGacha);
+    }
+}

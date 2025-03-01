@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageId>SuryaSyahrulRiyan.$(AssemblyName)</PackageId>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>StationaryClash.Interfaces</Title>
+    <Authors>SuryaSyahrulRiyan</Authors>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<PackageReference Include="SuryaSyahrulRiyan.StationaryClash.Models" Version="1.1.0" />
+  </ItemGroup>
+
+</Project>

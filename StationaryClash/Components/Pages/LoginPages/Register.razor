@@ -1,0 +1,93 @@
+﻿@page "/register"
+@using Microsoft.EntityFrameworkCore
+@using StationaryClash.Models
+@rendermode InteractiveServer
+@inject Interfaces.Services.IUserService UserService
+@inject Interfaces.Services.IAuthService AuthService
+@inject NavigationManager NavigationManager
+@inject Blazored.SessionStorage.ISessionStorageService SessionStorage
+
+<style>
+    body {
+        background: linear-gradient(180deg, #71C5E8 0%, #A4DBF2 50%, #CDECF9 100%);
+        margin: 0;
+        font-family: "VT323", serif;
+    }
+</style>
+
+<div class="box-register">
+    <div class="entire-register">
+        <h3 style="font-size:44px; margin:0px; text-align:center;">Register</h3>
+        <div class="container-register">
+            <div class="box-auth">
+                <label>Username:</label>
+                <input class="username-input" placeholder="username" @bind="username" />
+            </div>
+            <div class="box-auth">
+                <label>Password:</label>
+                <input class="password-input" type="password" placeholder="password" @bind="password" />
+            </div>
+            <div class="box-auth">
+                <label>Confirm Password:</label>
+                <input class="password-input" type="password" placeholder="confirm password" @bind="confirmPassword" />
+            </div>
+        </div>
+        <button class="btn btn-primary" @onclick="HandleRegister">Register</button>
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <p style="color:red">@errorMessage</p>
+        }
+
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <p style="color:green">@successMessage</p>
+        }
+    </div>
+</div>
+@code {
+    private string username { get; set; } = string.Empty;
+    private string password { get; set; } = string.Empty;
+    private string confirmPassword { get; set; } = string.Empty;
+    private string errorMessage { get; set; } = string.Empty;
+    private string successMessage { get; set; } = string.Empty;
+
+    private async Task HandleRegister()
+    {
+        // Reset messages
+        errorMessage = string.Empty;
+        successMessage = string.Empty;
+
+        // Validate form
+        if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(confirmPassword))
+        {
+            errorMessage = "All fields are required.";
+            return;
+        }
+
+        if (password != confirmPassword)
+        {
+            errorMessage = "Passwords do not match.";
+            return;
+        }
+
+        RegisterResponse response = await AuthService.RegisterAsync(username, password);
+        if (response.Success)
+        {
+            // Display success message
+            successMessage = "Account successfully registered! Redirecting to login...";
+            await Task.Delay(2000);
+            NavigationManager.NavigateTo("/login");
+        }
+        else if (string.Equals(response.Message, "Username already exists."))
+        {
+            // Error: username already exists
+            errorMessage = "Username already exists. Please choose a different one.";
+            return;
+        }
+        else
+        {
+            // Any other errors
+            errorMessage = $"An error occurred: {response.Message}";
+        }
+    }
+}

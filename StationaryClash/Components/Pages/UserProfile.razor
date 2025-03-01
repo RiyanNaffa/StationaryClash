@@ -1,0 +1,122 @@
+﻿@page "/user"
+@rendermode InteractiveServer
+@using StationaryClash.Models
+@inject Interfaces.Repositories.IUserRepository UserRepository
+@inject Blazored.SessionStorage.ISessionStorageService SessionStorage
+@inject NavigationManager NavigationManager
+
+<PageTitle>User Profile</PageTitle>
+<style>
+    body {
+        background: linear-gradient(180deg, #71C5E8 0%, #A4DBF2 50%, #CDECF9 100%);
+        margin: 0;
+        font-family: "VT323", serif;
+    }
+</style>
+@if (isRedirecting)
+{
+    <h1>Redirecting to login...</h1>
+}
+else if (currentUser is null)
+{
+    <h1>Loading User...</h1>
+}
+else
+{
+<div class="entire-user">
+    <h1 class="welcome-user">Welcome</h1>
+    <div class="box-user">
+        <p style="font-size: 32px; margin:0px;">User Information:</p>
+            <div class="box-info">
+                <div style=" font-size: 28px;">
+                    <p style="margin:0px;">Username: @currentUser.Username</p>
+                </div>
+                <p style=" font-size: 28px; margin:0px;">Token: @currentUser.Token</p>
+                <div class="desc-box-user">
+                    <p style="margin:0px;font-size: 28px;">Description:</p>
+                    <p class="desc-text">"@currentUser.Description"</p>
+                </div>
+                <div class="box-button">
+                    <button class="edit-button" @onclick="ShowEditPopup">Edit Description</button>
+                    <button class="edit-button" @onclick="NavigateToCollection">Collection</button>
+                </div>
+            </div>
+
+            @if (isEditing)
+            {
+                <PopupEdit  Title="Edit Description"
+                           EditedText="@editedDescription"
+                           SaveCallback="SaveDescription"
+                           CancelCallback="CancelEdit" />
+            }
+    </div>   
+</div>
+}
+
+@code{
+    private UserSession? currentUser;
+    private bool isRedirecting = false;
+    private bool isEditing = false;
+    private string editedDescription = string.Empty;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Ambil data pengguna dari session storage
+            currentUser = await SessionStorage.GetItemAsync<UserSession>("CurrentUser");
+
+            // Jika data tidak ditemukan, redirect ke login
+            if (currentUser is null)
+            {
+                isRedirecting = true;
+                await Task.Delay(1000);
+                StateHasChanged();
+                await Task.Delay(2000);
+                NavigationManager.NavigateTo("/login");
+            }
+            else
+            {
+                await Task.Delay(1000);
+                StateHasChanged();
+            }
+        }
+    }
+
+    private void ShowEditPopup()
+    {
+        isEditing = true;
+        editedDescription = currentUser?.Description ?? string.Empty;
+    }
+
+    private async Task SaveDescription(string newDescription)
+    {
+        await UserRepository.UpdateDescription(currentUser!.ID, newDescription);
+
+        editedDescription = newDescription;
+
+        await UpdateSessionStorageAsync();
+
+        isEditing = false;
+        StateHasChanged();
+    }
+
+    private async Task UpdateSessionStorageAsync()
+    {
+        if (currentUser is not null)
+        {
+            currentUser.Description = editedDescription;
+            Console.WriteLine(editedDescription);
+            await SessionStorage.SetItemAsync("CurrentUser", currentUser);
+        }
+    }
+
+    private void CancelEdit()
+    {
+        isEditing = false;
+    }
+
+    private void NavigateToCollection(){
+        NavigationManager.NavigateTo("/collection");
+    }
+}

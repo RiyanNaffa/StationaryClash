@@ -1,0 +1,169 @@
+﻿@page "/gacha"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using StationaryClash.Models
+@using StationaryClash.Data
+@inject Blazored.SessionStorage.ISessionStorageService SessionStorage
+@inject Interfaces.Repositories.IUserRepository UserRepository
+@inject Interfaces.Repositories.IGachaRepository GachaRepository
+@inject Interfaces.Repositories.IInventoryRepository InventoryRepository
+@inject Interfaces.Services.IGachaService GachaService
+@inject StationaryClash.Utils.RandomRarity RandomRarity
+@inject NavigationManager NavigationManager
+@inject IDbContextFactory<StationaryClash.Data.StationaryClashContext> DbFactory
+
+<PageTitle>Gacha</PageTitle>
+
+<style>
+    body {
+        background: linear-gradient(180deg, #71C5E8 0%, #A4DBF2 50%, #CDECF9 100%);
+        height: 100vh;
+        margin: 0;
+        font-family: "VT323", serif;
+    }
+</style>
+
+@if (character is null)
+{
+    <PopupGacha Title="Selamat!" CharacterName="Null" IsVisible=@isVisible IsVisibleChanged="OnVisibilityChanged" />
+}
+else
+{
+    charName = $"{character.Name}";
+    charRarity =character.Rarity;
+    charHealth = $"{character.Health}";
+    charAtt = $"{character.Attack}";
+    charDef = $"{character.Defense}";
+    charSpeed = $"{character.Speed}";
+    charImage = $"{character.Image}";
+    <PopupGacha CharacterName=@charName CharacterRarity=@charRarity CharacterHealth=@charHealth CharacterAttack=@charAtt CharacterDefense=@charDef CharacterSpeed=@charSpeed CharacterImage=@charImage IsVisible=@isVisible IsVisibleChanged="OnVisibilityChanged" />
+}
+
+@if (!canGacha)
+{
+    <PopupAlert CanGacha="@canGacha" IsErrorChanged="OnVisibilityError"></PopupAlert>
+}
+
+<div class="box-gacha">
+    <h1 style="font-size: 80px; font-weight:700">Gacha Banner</h1>
+    <img src="/Images/banner.png" width="350" />
+    <div class="desc-box;">
+        <p class="desc">Dapatkan alat tulis favorit Anda dengan sebuah klik. Duplikat akan menambah stat alat tulis Anda.</p>
+        <div style="display: flex; justify-content: flex-end; gap:40px">
+            <button class="pull-btn" @onclick="NavigateToCharacters">Items</button>
+            <button class="pull-btn" @onclick="GachaOnce">Pull 1</button>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    // Ambil Id dari current user
+
+    private int userId;
+    private UserSession? currentUser;
+    bool isRedirecting = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            currentUser = await SessionStorage.GetItemAsync<UserSession>("CurrentUser");
+            // Jika user tidak ditemukan, redirect ke login
+            if (currentUser is null)
+            {
+                isRedirecting = true;
+                StateHasChanged();
+                await Task.Delay(2000);
+                NavigationManager.NavigateTo("/login");
+            }
+            else
+            {
+                GetCurrentUserId();
+                await ShowToken();
+                await Task.Delay(1000);
+                StateHasChanged();
+            }
+        }
+    }
+
+    private void GetCurrentUserId()
+    {
+        if (currentUser is not null) userId = currentUser.ID;
+    }
+
+    // Gacha Part
+
+    private int rarity;
+
+    // Pull gacha dan popup variables
+    private Character? character;
+    private string charName = "";
+    private int charRarity;
+    private string charHealth = "";
+    private string charAtt = "";
+    private string charDef = "";
+    private string charSpeed = "";
+    private string charImage = "";
+    private bool isVisible = false;
+    private bool canGacha = true;
+
+    // Token display
+    private int userToken;
+
+    private async Task ShowToken() => userToken = await UserRepository.GetUserTokenAsync(userId);
+
+    private async Task GachaOnce()
+    {
+        if (currentUser is null)
+        {
+            isRedirecting = true;
+            StateHasChanged();
+            await Task.Delay(2000);
+            NavigationManager.NavigateTo("/login");
+        }
+        if (!await GachaService.CanPullGacha(userId))
+        {
+            canGacha = false;
+            return;
+        }
+
+        rarity = RandomRarity.GenerateRarity();
+
+        character = await GachaRepository.GetCharacterFromGacha(rarity);
+
+        await InventoryRepository.AddCharacterToInventory(userId, character.ID);
+        await UserRepository.DecrementUserToken(userId);
+        // Update variabel display untuk token (userToken)
+        await ShowToken();
+        // Serialisasi JSON untuk mengganti nilai token
+        await UpdateSessionStorageAsync();
+        isVisible = true;
+    }
+
+    private async Task UpdateSessionStorageAsync()
+    {
+        if (currentUser is not null)
+        {
+            currentUser.Token = userToken;
+            await SessionStorage.SetItemAsync("CurrentUser", currentUser);
+        }
+    }
+
+    private void OnVisibilityChanged(bool isPopupVisible)
+    {
+        isVisible = isPopupVisible;
+    }
+
+    private void OnVisibilityError(bool isPopupVisible)
+    {
+        canGacha = isPopupVisible;
+    }
+
+    private void NavigateToCharacters()
+    {
+        NavigationManager.NavigateTo("/gacha/characters");
+    }
+
+}

@@ -1,0 +1,68 @@
+﻿@page "/login"
+@rendermode InteractiveServer
+@using StationaryClash.Models
+@inject Interfaces.Services.IAuthService AuthService
+@inject NavigationManager NavigationManager
+@inject Blazored.SessionStorage.ISessionStorageService SessionStorage
+
+<style>
+    body {
+        background: linear-gradient(180deg, #71C5E8 0%, #A4DBF2 50%, #CDECF9 100%);
+        margin: 0;
+        font-family: "VT323", serif;
+    }
+</style>
+
+<div class="box-login">
+    <div class="entire-login">
+        <h3 style="font-size:44px; margin:0px; text-align:center;">Login</h3>
+        <div class="container-login">
+            <div class="box-auth">
+                <label>Username:</label>
+                <input class="username-input" placeholder="username" @bind="Username" />
+            </div>
+            <div class="box-auth">
+                <label>Password:</label>
+                <input class="password-input" type="password" placeholder="password" @bind="Password" />
+            </div>
+        </div>
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <p class="error-msg">@ErrorMessage</p>
+        }
+        <button class="btn btn-primary" @onclick="HandleLogin">Login</button>
+        <p style="font-size: 20px;">Tidak punya akun? <a @onclick="RedirectToRegister" class="register-link">Register</a></p>
+    </div>
+</div>
+@code {
+    private string Username = string.Empty;
+    private string Password = string.Empty;
+    private string ErrorMessage = string.Empty;
+
+    private async Task HandleLogin()
+    {
+        var user = await AuthService.LoginAsync(Username, Password);
+        if (user != null)
+        {
+            // Simpan user ke dalam session storage
+            var sessionUser = new UserSession()
+                {
+                    ID = user.ID,
+                    Username = user.Username,
+                    Token = user.Token,
+                    Description = user.Description
+                };
+            await SessionStorage.SetItemAsync("CurrentUser", sessionUser);
+            NavigationManager.NavigateTo("/user");
+        }
+        else
+        {
+            ErrorMessage = "Username atau password salah.";
+        }
+    }
+
+    private void RedirectToRegister()
+    {
+        NavigationManager.NavigateTo("/register");
+    }
+}

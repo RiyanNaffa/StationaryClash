@@ -1,0 +1,45 @@
+﻿.entire-user {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0px;
+    padding-top: 30px;
+    gap:20px;
+}
+.welcome-user{
+    text-align:left;
+    width:100%;
+    font-size: 60px; 
+}
+.box-user {
+    width: 50%;
+}
+.box-info {
+    border: 8px solid #080000;
+    border-radius: 8px;
+    padding: 16px 20px 16px 20px;
+    background-color:snow;
+}
+.desc-box-user{
+    display:flex;
+    flex-direction:column;
+}
+.desc-text {
+    font-size: 28px;
+    margin:0px;
+}
+
+.box-button{
+    display:flex;
+    justify-content:end;
+    margin-top: 16px;
+    gap:32px;
+    flex-direction:row-reverse
+}
+.edit-button {
+    font-size: 20px;
+    padding:6px 20px 6px 20px;
+    border-radius: 6px;
+}

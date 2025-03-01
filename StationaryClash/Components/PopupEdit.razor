@@ -1,0 +1,33 @@
+﻿<div class="popup">
+    <div class="popup-content">
+        <h3>@Title</h3>
+        <textarea @bind="EditedText" rows="5" cols="40"></textarea>
+        <br />
+        <button @onclick="OnSave">Save</button>
+        <button @onclick="OnCancel">Cancel</button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "Edit";
+
+    [Parameter]
+    public string EditedText { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<string> SaveCallback { get; set; }
+
+    [Parameter]
+    public EventCallback CancelCallback { get; set; }
+
+    private async Task OnSave()
+    {
+        await SaveCallback.InvokeAsync(EditedText);
+    }
+
+    private async Task OnCancel()
+    {
+        await CancelCallback.InvokeAsync();
+    }
+}

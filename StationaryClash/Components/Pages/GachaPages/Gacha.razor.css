@@ -1,0 +1,40 @@
+﻿h1, h2, h3, h4, h5, h6, p, button {
+    font-family: "VT323", serif;
+}
+
+img {
+    margin: 0 auto;
+    border-radius: 1em;
+}
+
+.box-gacha {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 50px 30px 30px 30px;
+    margin: 0px 100px 0px 100px;
+}
+
+.desc-box {
+    margin-right: 70px;
+    margin-left: 70px;
+    display: flex;
+    width: auto;
+    flex-direction: column;
+    gap: 50px;
+}
+
+.desc {
+    font-size: 2em;
+}
+
+.pull-btn {
+    width: 200px;
+    font-size: 2em;
+    color: #fff;
+    padding: 0.5em;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+    border-radius: 0.5em;
+}

@@ -1,0 +1,88 @@
+﻿@page "/gacha/characters"
+@using StationaryClash.Models
+@inject Interfaces.Repositories.IGachaRepository GachaRepository
+
+<PageTitle>Gacha Characters</PageTitle>
+
+<style>
+    body {
+        background: #71C5E8;
+        margin: 0;
+        font-family: "VT323", serif;
+    }
+</style>
+
+<h3>List of Gacha Characters</h3>
+
+@if (isLoading)
+{
+    <p>Loading items...</p>
+}
+else if (!gachaItems!.Any() || gachaItems is null)
+{
+    <p>No items available for gacha.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr style="font-size: 24px;">
+                <th>Image</th>
+                <th>Name</th>
+                <th>Rarity</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in gachaItems)
+            {
+                <tr>
+                    <td style="vertical-align:middle;">
+                        <img src="@item.Image" width="50" height="50" />
+                    </td>
+                    <td style="vertical-align:middle; font-size:20px">@item.Name</td>
+                    <td style="vertical-align:middle; ">
+                        <img src="/Images/Stars.png" alt="rarity stars" style="width:30px; margin:0px;" />
+                        @if (item.Rarity == 2)
+                        {
+                            <img src="/Images/Stars.png" alt="Rarity Image" style="width:30px; margin-left:7px;" />
+                        }
+                        @if (item.Rarity == 3)
+                        {
+                            <img src="/Images/Stars.png" alt="Rarity Image" style="width:30px; margin-left:7px;" />
+                            <img src="/Images/Stars.png" alt="Rarity Image" style="width:30px; margin:0px;" />
+                        }
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private bool isLoading = true;
+    private List<CharacterGacha>? gachaItems = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadGachaItems();
+    }
+
+    private async Task LoadGachaItems()
+    {
+        try
+        {
+            isLoading = true;
+            // Query ke database untuk mendapatkan daftar karakter
+            gachaItems = await GachaRepository.LoadPullableCharacters();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading gacha characters: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

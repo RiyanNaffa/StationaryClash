@@ -1,0 +1,68 @@
+﻿@code {
+    [Parameter] public string Title { get; set; } = "Congratulations!";
+    [Parameter] public string CharacterName { get; set; } = "Character Name";
+    [Parameter] public int CharacterRarity { get; set; } 
+    [Parameter] public string CharacterHealth { get; set; } = "Character Health";
+    [Parameter] public string CharacterAttack { get; set; } = "Character Attack";
+    [Parameter] public string CharacterDefense { get; set; } = "Character Defense";
+    [Parameter] public string CharacterSpeed { get; set; } = "Character Speed";
+    [Parameter] public string CharacterImage { get; set; } = "Character Image";
+    [Parameter] public bool IsVisible { get; set; } = false;
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; } // EventCallback untuk mengubah status visibilitas
+}
+@if (IsVisible)
+{
+    <div class="popup-overlay">
+        <div class="popup-card">
+            <div class="popup-header">
+                <h3>@Title</h3>
+                <button @onclick="ClosePopup">🗙</button>
+            </div>
+            <div class="popup-body">
+                <div class="popup-content" style=@(CharacterRarity==1 ? "background-color: rgb(189, 208, 220)" : CharacterRarity == 2 ? "background-color: rgb(34, 130, 214)" : "background-color: rgb(188, 103, 250)")>
+                    <div class="popup-char-box" style=@(CharacterRarity == 1 ? "border: 8px solid rgb(158, 174, 184)" : CharacterRarity == 2 ? "border: 8px solid rgb(32, 108, 176)" : "border: 8px solid rgb(173, 67, 250)" )>
+                        <p class="popup-char">@CharacterName</p>
+                    </div>
+                    <img src="@CharacterImage" alt="Placeholder Image" class="popup-image" />
+                    <div class="rarity-box">
+                        <img src="/Images/Stars.png" alt="Rarity Image" class="stars-rarity" />
+                        @if (CharacterRarity == 2)
+                        {
+                            <img src="/Images/Stars.png" alt="Rarity Image" class="stars-rarity" />
+                        }
+                        @if (CharacterRarity == 3)
+                        {
+                            <img src="/Images/Stars.png" alt="Rarity Image" class="stars-rarity" />
+                            <img src="/Images/Stars.png" alt="Rarity Image" class="stars-rarity" />
+                        }
+                    </div>
+                    <div class="stats-box" style=@(CharacterRarity == 1 ? "border: 3px solid rgb(158, 174, 184)" : CharacterRarity == 2 ? "border: 3px solid rgb(32, 108, 176)" : "border: 3px solid rgb(173, 67, 250)" )>
+                        <div class="stats-desc-box">
+                            <p class="stats-desc">Health</p>
+                            <p class="stats-value">: @CharacterHealth</p>
+                        </div>
+                        <div class="stats-desc-box">
+                            <p class="stats-desc">Attack</p>
+                            <p class="stats-value">: @CharacterAttack</p>
+                        </div>
+                        <div class="stats-desc-box">
+                            <p class="stats-desc">Defense</p>
+                            <p class="stats-value">: @CharacterDefense</p>
+                        </div>
+                        <div class="stats-desc-box">
+                            <p class="stats-desc">Speed</p>
+                            <p class="stats-value">: @CharacterSpeed</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@code {
+    private void ClosePopup()
+    {
+        IsVisible = false;
+        IsVisibleChanged.InvokeAsync(IsVisible);
+    }
+}
